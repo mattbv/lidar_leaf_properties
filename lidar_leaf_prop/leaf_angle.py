@@ -1,30 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-@author: Matheus
+Main module to estimate leaf angle distribution from a point cloud.
+
+@author: Matheus Boni Vicari (matheus.boni.vicari@gmail.com)
 """
 
 import numpy as np
-from scipy import linalg as LA
 from scipy.spatial.distance import cdist
-import mayavi.mlab as mlab
-from normals import tri_normal
 from filters import evals_ratio
 from angles import norm_to_angle
 from angles import angle_from_zenith
-from nnsearch import set_nbrs_rad
+from nnsearch import set_nbrs_knn
 from point_utils import get_center
+from point_utils import remove_duplicates
+from normals import from_cloud as cloud_normal
 
 
-def angle_from_points(points, rad):
+def angle_from_points(points, knn, r_thres=0.1):
 
     # Removing duplicate points from arr.
-    arr = remove_duplicates(arr)
+    points = remove_duplicates(points)
 
     # Calculating normal vectors and eigenvalues for each point in arr.
-    normal_vectors, eigenvals = point_normals(arr, rad)
+    normal_vectors, cc, evals = point_normals(points, knn)
 
     # Masking normals based on eigenvalues ratios.
-    filter_mask = evals_ratio(arr[:, :3], normal_vectors, eigenvals)
+    filter_mask = evals_ratio(points[:, :3], normal_vectors, evals,
+                              r_thres)
 
     # Calculating absolute angles between each normal vector and horizontal
     # plane [0, 0, 1].
@@ -32,84 +34,55 @@ def angle_from_points(points, rad):
 
     # Calculating zenithal angle, here defined as smallest angle from the
     # vertical axis (0, 180 or 360).
-    zenith_angle = angle_from_zenith(abs_angles)
+    zenith_angles = np.array([angle_from_zenith(x) for x in abs_angles])
 
-    # Setting bad quality points' angles (detected by filtering normals) to 0.
-    zenith_angle[~filter_mask] = 0
+#    # Setting bad quality points' angles (detected by filtering normals) to 0.
+    zenith_angles[~filter_mask] = np.nan
 
-    return zenith_angle
-
-
-def angle_from_mesh(facets):
-
-    # Calculating normal vectors and eigenvalues for facet in facets.
-    normal_vectors, eigenvals = mesh_normals(facets)
-
-    # Calculating absolute angles between each normal vector and horizontal
-    # plane [0, 0, 1].
-    abs_angles = norm_to_angle(normal_vectors)
-
-    # Calculating zenithal angle, here defined as smallest angle from the
-    # vertical axis (0, 180 or 360).
-    zenith_angle = angle_from_zenith(abs_angles)
-
-    return zenith_angle
+    return zenith_angles
 
 
-def point_normals(arr, rad):
+def point_normals(arr, knn):
 
-    base = get_center(arr)
+    # Getting center of point cloud. This will be later used to correct
+    # orientation of normal vectors.
+    center = get_center(arr)
 
-    dist, indices = set_nbrs_rad(arr, arr, rad, return_dist=True)
+    # Obtaining neighborhood parameters.
+#    dist, indices = set_nbrs_rad(arr, arr, rad, return_dist=True)
+    dist, indices = set_nbrs_knn(arr, arr, knn, return_dist=True)
 
-    evecs = np.zeros([arr.shape[0], 3])
-    evals = np.zeros([arr.shape[0], 3])
+    # Initializing normals, centers and eigenvalues arrays.
+    nn = np.full([arr.shape[0], 3], np.nan)
+    cc = np.full([arr.shape[0], 3], np.nan)
+    ss = np.full([arr.shape[0], 3], np.nan)
 
+    # Looping over each neighborhood set and calculating normal parameters.
     for i, (idx, d) in enumerate(zip(indices, dist)):
+        # Calculates and stores neihborhood centroids, normal vectors and
+        # eigenvalues.
+        C, N, S = cloud_normal(arr[idx])
+        nn[i] = N
+        cc[i] = C
+        ss[i] = S
 
-        masked_ids = idx[d <= (np.mean(d) + np.std(d))]
+    # Calculating distance from each point in 'arr' to 'center'.
+    arr_to_center = cdist(arr, center.reshape([1, 3]))
 
-        if len(masked_ids) >= 3:
-            cov = np.cov(arr[masked_ids].T)
-            e_vals, e_vecs = LA.eig(cov)
-            ev_id = np.argmin(e_vals)
-            evecs[i] = e_vecs[ev_id]
-            evals[i] = e_vals
+    # Creating a scaled set of normal vectors. These scaled vectors witll
+    # be used to detect if the normal vectors are pointed inwards or outwards.
+    scaled_evecs = nn * (0.1 * arr_to_center)
 
-    arr_to_base = cdist(arr, base.reshape([1, 3]))
+    # Calculating distance of each scalled vector to center.
+    norm_to_base = cdist((arr + scaled_evecs), center.reshape([1, 3]))
 
-    scaled_evecs = evecs * (0.1 * arr_to_base)
+    # Creating correction coefficients. Sets 1 where vectors are pointed
+    # outwards (desired direction) and -1 where vectores are pointed inwards.
+    corr_coeff = np.where(norm_to_base < arr_to_center, -1, 1)
 
-    norm_to_base = cdist((arr + scaled_evecs), base.reshape([1, 3]))
-    corr_coeff = np.where(norm_to_base < arr_to_base, -1, 1)
-    norm_vec = evecs * corr_coeff
+    # Correcting (if necessary) normal vectors by multiplying them to
+    # correction coefficients. This will make sure to invert vectors pointed
+    # inwards.
+    norm_vec = nn * corr_coeff
 
-    return norm_vec, evals
-
-
-def mesh_normals(facets):
-
-    coords = np.asarray(facets[['vx', 'vy', 'vz']])
-
-    base = get_center(coords)
-
-    n_facets = coords.shape[0] / 3
-
-    evecs = np.zeros([n_facets, 3])
-    center = np.zeros([n_facets, 3])
-
-    for i, (j) in enumerate(range(0, coords.shape[0], 3)):
-        facet_coords = coords[j:j+3, :]
-        if facet_coords.shape[0] == 3:
-            evecs[i] = tri_normal(facet_coords)
-            center[i] = np.mean(facet_coords, axis=0)
-
-    arr_to_base = cdist(center, base.reshape([1, 3]))
-
-    scaled_evecs = evecs * (0.1 * arr_to_base)
-
-    norm_to_base = cdist((center + scaled_evecs), base.reshape([1, 3]))
-    corr_coeff = np.where(norm_to_base < arr_to_base, -1, 1)
-    norm_vec = evecs * corr_coeff
-
-    return norm_vec, center
+    return norm_vec, cc, ss

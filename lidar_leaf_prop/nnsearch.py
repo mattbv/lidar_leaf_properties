@@ -2,6 +2,7 @@
 """
 @author: Matheus Boni Vicari (matheus.boni.vicari@gmail.com)
 
+Performs Nearest Neighbours search wrapping around sklearn.neighbors package.
 """
 from sklearn.neighbors import NearestNeighbors
 

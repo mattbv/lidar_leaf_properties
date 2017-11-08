@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Aug 24 08:38:19 2016
-
-@author: mathe
+@author: Matheus Boni Vicari (matheus.boni.vicari@gmail.com)
 """
 
 import numpy as np
@@ -46,25 +44,78 @@ def get_diff(arr1, arr2):
     return np.asarray(diff)
 
 
-def get_base_point(arr):
+def remove_duplicates(arr, return_ids=False):
 
-    xbase = np.min(arr[:, 0]) + ((np.max(arr[:, 0]) -
-                                  np.min(arr[:, 0])) / 2)
-    ybase = np.min(arr[:, 1]) + ((np.max(arr[:, 1]) -
-                                  np.min(arr[:, 1])) / 2)
-    zbase = np.min(arr[:, 2])
+    """
+    Function to remove duplicated rows from an array.
 
-    return np.array([xbase, ybase, zbase])
+    Parameters
+    ----------
+    arr: array
+        N-dimensional array (m x n) containing a set of parameters (n) over a
+        set of observations (m).
+
+    Returns
+    -------
+    unique: array
+        N-dimensional array (m* x n) containing a set of unique parameters (n)
+        over a set of unique observations (m*).
+
+    """
+
+    # Setting the pandas.DataFrame from the array (arr) data.
+    df = pd.DataFrame({'x': arr[:, 0],
+                       'y': arr[:, 1], 'z': arr[:, 2]})
+
+    # Using the drop_duplicates function to remove the duplicate points from
+    # df.
+    unique = df.drop_duplicates(['x', 'y', 'z'])
+
+    return np.asarray(unique).astype(float)
 
 
 def get_center(arr):
+
+    """
+    Function to calculate the centroid coordinates of a set of points.
+
+    Parameters
+    ==========
+    arr: numpy.ndarray
+        n x dimensions set of point coordinates.
+
+    Returns
+    =======
+    arr: numpy.ndarray
+        1 x d centroid coordinates.
+
+    """
+
     return np.min(arr, axis=0) + ((np.max(arr, axis=0) -
                                   np.min(arr, axis=0)) / 2)
 
 
 def upscale_data(low_dens, high_dens, dist_threshold=0.02):
 
+    """
+    Function to obtain a higher density set of points based on their distance
+    from points contained in a lower density cloud.
+
+    Parameters
+    ==========
+    low_dens: numpy.ndarray
+        n x 3 array contained a low(er) density point cloud.
+    high_dens: numpy.ndarray
+        n x 3 array contained a high(er) density point cloud.
+    dist_threshold: float
+        Maximum distance of points in high_dens to points in low_dens that are
+        still considered a valid neighborhood.
+
+    """
+
+    # Obtaining neighborhoord parameters.
     dist, idx = set_nbrs_knn(low_dens[:, :3], high_dens[:, :3], 1)
+    # Masking neighborhoods based on distance threshold.
     mask = np.where(dist <= dist_threshold)[0]
 
     return high_dens[mask]
