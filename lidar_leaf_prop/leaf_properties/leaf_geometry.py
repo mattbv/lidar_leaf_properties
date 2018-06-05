@@ -9,22 +9,9 @@ import sys
 sys.path.append('..')
 from utility.nnsearch import set_nbrs_knn
 from utility.point_utils import remove_duplicates
-from leaf_angle.normals import from_cloud as cloud_normal
+from utility.normals import normals_from_cloud
 from scipy.spatial import Delaunay
 from sklearn.decomposition import PCA
-
-
-def area_triangle(vertices):
-    
-    def distance(p1, p2):
-        return np.hypot(p1[0]-p2[0], p1[1]-p2[1])
-
-    side_a = distance(vertices[0], vertices[1])
-    side_b = distance(vertices[1], vertices[2])
-    side_c = distance(vertices[2], vertices[0])
-    s = 0.5 * ( side_a + side_b + side_c)
-    
-    return np.sqrt(s * (s - side_a) * (s - side_b) * (s - side_c))
 
 
 def triangulate_cloud(arr, knn, eval_threshold, dist_threshold):
@@ -42,7 +29,7 @@ def triangulate_cloud(arr, knn, eval_threshold, dist_threshold):
     for i, (idx, d) in enumerate(zip(indices, dist)):
         # Calculates and stores neihborhood centroids, normal vectors and
         # eigenvalues.
-        C, N, S = cloud_normal(arr[idx])
+        C, N, S = normals_from_cloud(arr[idx])
         nn[i] = N
         cc[i] = C
         ss[i] = S
@@ -83,15 +70,6 @@ def triangulate_cloud(arr, knn, eval_threshold, dist_threshold):
     return tri_sorted.astype(int)
 
 
-def triangulation_area(arr, tri):
-    
-    area = []
-    for t in tri:
-        area.append(area_triangle(arr[t].astype(float)))
-        
-    return area
-
-
 def expand_triangulation(tri):
 
     tri_mesh = np.zeros([len(tri) * 3, 3], dtype=int)
@@ -102,5 +80,3 @@ def expand_triangulation(tri):
         tri_mesh[base_id + 2, :] = [t[2], t[0], t[1]]
 
     return tri_mesh
-
- 
