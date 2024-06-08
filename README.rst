@@ -18,22 +18,21 @@ Installation
 ------------
 To install the package, run the following command in the terminal:
         
-        ```bash
-        python setup.py install
-        ```
+        .. code-block:: bash
 
+                python setup.py install
+        
 Usage
 -----
 To use the package, run the following command in the terminal:
 
-        ```python
-        import leafproperties
+        .. code-block:: python
 
-        # Load the point cloud
-        pc = np.loadtxt('path/to/pointcloud.txt')[:, :3]  # Load the point cloud and keep only the x, y, and z columns
+                import leafproperties
 
-        leaf_angles = leafproperties.leaf_angle.angle_from_points(pc, knn=10)
+                # Load the point cloud
+                pc = np.loadtxt('path/to/pointcloud.txt')[:, :3]  # Load the point cloud and keep only the x, y, and z columns
 
-        ```
+                leaf_angles = leafproperties.leaf_angle.angle_from_points(pc, knn=10)
 
 
