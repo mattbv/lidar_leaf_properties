@@ -7,11 +7,11 @@ Module to calculate normal vectors.
 
 import numpy as np
 from numba import jit
-from nnsearch import set_nbrs_knn
+
+from leafproperties.nnsearch import set_nbrs_knn
 
 
 def point_normals(arr, knn):
-
     # Obtaining neighborhood parameters.
     dist, indices = set_nbrs_knn(arr, arr, knn, return_dist=True)
     indices = indices.astype(int)
@@ -39,7 +39,6 @@ def point_normals(arr, knn):
 
 @jit
 def normals_from_triangle(tri):
-
     """
     Function to calculate the normal angle of a plane defined by 3 vertices.
 
@@ -63,7 +62,6 @@ def normals_from_triangle(tri):
 
 @jit
 def normals_from_cloud(arr):
-
     """
     Function to calculate the normal vector of a fitted plane from a set
     of points.

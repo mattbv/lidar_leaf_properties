@@ -6,8 +6,8 @@ Created on Mon Oct 30 08:18:04 2017
 """
 
 import glob
-import numpy as np
 
+import numpy as np
 
 fname = '1178'
 folder = r'E:\test_leaf_prop\points\%s/' % (fname)

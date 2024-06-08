@@ -5,11 +5,11 @@
 
 import numpy as np
 import pandas as pd
-from nnsearch import set_nbrs_knn
+
+from leafproperties.nnsearch import set_nbrs_knn
 
 
 def get_diff(arr1, arr2):
-
     """
     Function to perform the intersection of two arrays, returning the
     entries not intersected between arr1 and arr2.
@@ -45,7 +45,6 @@ def get_diff(arr1, arr2):
 
 
 def remove_duplicates(arr, return_ids=False):
-
     """
     Function to remove duplicated rows from an array.
 
@@ -64,18 +63,16 @@ def remove_duplicates(arr, return_ids=False):
     """
 
     # Setting the pandas.DataFrame from the array (arr) data.
-    df = pd.DataFrame({'x': arr[:, 0],
-                       'y': arr[:, 1], 'z': arr[:, 2]})
+    df = pd.DataFrame({"x": arr[:, 0], "y": arr[:, 1], "z": arr[:, 2]})
 
     # Using the drop_duplicates function to remove the duplicate points from
     # df.
-    unique = df.drop_duplicates(['x', 'y', 'z'])
+    unique = df.drop_duplicates(["x", "y", "z"])
 
     return np.asarray(unique).astype(float)
 
 
 def get_center(arr):
-
     """
     Function to calculate the centroid coordinates of a set of points.
 
@@ -91,12 +88,10 @@ def get_center(arr):
 
     """
 
-    return np.min(arr, axis=0) + ((np.max(arr, axis=0) -
-                                  np.min(arr, axis=0)) / 2)
+    return np.min(arr, axis=0) + ((np.max(arr, axis=0) - np.min(arr, axis=0)) / 2)
 
 
 def upscale_data(low_dens, high_dens, dist_threshold=0.02):
-
     """
     Function to obtain a higher density set of points based on their distance
     from points contained in a lower density cloud.

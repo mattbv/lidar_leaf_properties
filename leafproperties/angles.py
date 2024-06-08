@@ -9,7 +9,6 @@ from numba import jit
 
 @jit
 def norm_to_angle(norm_vec):
-
     """
     Function to calculate the (acute) angles between an array of normal vectors
     and a purerely vertical vector (0, 0, 1).
@@ -32,14 +31,13 @@ def norm_to_angle(norm_vec):
     # Iterating over normal vectors to calculate their angle from [0, 0, 1]
     # using the function angle. Stores results to array 'angles'.
     for i, nn in enumerate(norm_vec):
-        angles[i] = angle([0., 0., 1.], nn)
+        angles[i] = angle([0.0, 0.0, 1.0], nn)
 
     return rad_to_degree(angles)
 
 
 @jit
 def angle(vec1, vec2):
-
     """
     Function to calculate the angle between two vectors.
 
@@ -56,15 +54,15 @@ def angle(vec1, vec2):
         Angle between v1 and v2
     """
 
-    angle = np.arccos(np.dot(vec1, vec2) / (np.linalg.norm(vec1) *
-                      np.linalg.norm(vec2)))
+    angle = np.arccos(
+        np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+    )
 
     return angle
 
 
 @jit
 def rad_to_degree(angles):
-
     """
     Function to convert an angle, or array of angles, from radians to degree.
 
@@ -85,7 +83,6 @@ def rad_to_degree(angles):
 
 @jit
 def angle_from_zenith(angle):
-
     """
     Function to calculate the smallest angular distance of an angle from
     zenith.

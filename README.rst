@@ -13,3 +13,27 @@ Any questions or suggestions, feel free to contact me using one of the following
 To-Do:
 - Add documentation
 - Add tests
+
+Installation
+------------
+To install the package, run the following command in the terminal:
+        
+        ```bash
+        python setup.py install
+        ```
+
+Usage
+-----
+To use the package, run the following command in the terminal:
+
+        ```python
+        import leafproperties
+
+        # Load the point cloud
+        pc = np.loadtxt('path/to/pointcloud.txt')[:, :3]  # Load the point cloud and keep only the x, y, and z columns
+
+        leaf_angles = leafproperties.leaf_angle.angle_from_points(pc, knn=10)
+
+        ```
+
+

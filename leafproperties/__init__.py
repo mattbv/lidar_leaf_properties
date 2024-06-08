@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Matheus Boni Vicari, LeafProp Project
+# Copyright (c) 2017-2024, Matheus Boni Vicari.
 # All rights reserved.
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 __author__ = "Matheus Boni Vicari"
-__copyright__ = "Copyright 2017, LeafProp Project"
+__copyright__ = "Copyright 2017-2024"
 __credits__ = ["Matheus Boni Vicari"]
 __license__ = "GPL3"
 __version__ = "0.1"
@@ -23,8 +23,8 @@ __maintainer__ = "Matheus Boni Vicari"
 __email__ = "matheus.boni.vicari@gmail.com"
 __status__ = "Development"
 
-__all__ = ['leaf_angle', 'utility', 'scripts']
+__all__ = ["angle_from_points", "area_from_points", "triangulate_cloud"]
 
-import leaf_angle
-import utility
-import scripts
+from leafproperties.leaf_angle import angle_from_points
+from leafproperties.leaf_area import area_from_points
+from leafproperties.leaf_geometry import triangulate_cloud

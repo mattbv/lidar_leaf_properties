@@ -41,7 +41,6 @@ from sklearn.neighbors import NearestNeighbors
 
 
 def set_nbrs_knn(arr, pts, knn, return_dist=True, block_size=100000):
-
     """
     Function to create a set of nearest neighbors indices and their respective
     distances for a set of points. This function uses a knn search and sets a
@@ -77,9 +76,13 @@ def set_nbrs_knn(arr, pts, knn, return_dist=True, block_size=100000):
 
     # Initiating the nearest neighbors search and fitting it to the input
     # array.
-    nbrs = NearestNeighbors(n_neighbors=knn, metric='euclidean',
-                            algorithm='kd_tree', leaf_size=15,
-                            n_jobs=-1).fit(arr)
+    nbrs = NearestNeighbors(
+        n_neighbors=knn,
+        metric="euclidean",
+        algorithm="kd_tree",
+        leaf_size=15,
+        n_jobs=-1,
+    ).fit(arr)
 
     # Making sure block_size is limited by at most the number of points in
     # arr.
@@ -116,7 +119,6 @@ def set_nbrs_knn(arr, pts, knn, return_dist=True, block_size=100000):
 
 
 def set_nbrs_rad(arr, pts, rad, return_dist=True, block_size=100000):
-
     """
     Function to create a set of nearest neighbors indices and their respective
     distances for a set of points. This function uses a radius search and sets
@@ -154,9 +156,9 @@ def set_nbrs_rad(arr, pts, rad, return_dist=True, block_size=100000):
 
     # Initiating the nearest neighbors search and fitting it to the input
     # array.
-    nbrs = NearestNeighbors(radius=rad, metric='euclidean',
-                            algorithm='kd_tree', leaf_size=15,
-                            n_jobs=-1).fit(arr)
+    nbrs = NearestNeighbors(
+        radius=rad, metric="euclidean", algorithm="kd_tree", leaf_size=15, n_jobs=-1
+    ).fit(arr)
 
     # Creating block of ids.
     ids = np.arange(pts.shape[0])
@@ -190,7 +192,6 @@ def set_nbrs_rad(arr, pts, rad, return_dist=True, block_size=100000):
 
 
 def subset_nbrs(distance, indices, new_knn, block_size=100000):
-
     """
     Performs a subseting of points from the results of a nearest neighbors
     search.
@@ -233,15 +234,14 @@ def subset_nbrs(distance, indices, new_knn, block_size=100000):
 
     # Processing all blocks of indices in ids.
     for id_ in ids:
-
         # Looping over each sample in distance and indices.
         for d, i in zip(distance[id_], indices[id_]):
             # Checks if new knn values are smaller than current distance and
             # indices rows. This avoids errors of trying to select a number of
             # columns larger than the available columns.
             if distance.shape[1] >= new_knn:
-                new_distance.append(d[:new_knn+1])
-                new_indices.append(i[:new_knn+1].astype(int))
+                new_distance.append(d[: new_knn + 1])
+                new_indices.append(i[: new_knn + 1].astype(int))
             else:
                 new_distance.append(d)
                 new_indices.append(int(i))

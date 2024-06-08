@@ -1,0 +1,9 @@
+services:
+  app:
+    tty: true
+    build:
+      dockerfile: Dockerfile
+    container_name: lidar_leaf_properties
+    restart: unless-stopped
+    volumes:
+      - .:/app
