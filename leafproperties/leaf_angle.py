@@ -18,7 +18,7 @@ def angle_from_points(points, knn, r_thres=0.1):
     points = remove_duplicates(points[:, :3])
 
     # Calculating normal vectors and eigenvalues for each point in arr.
-    normal_vectors, cc, evals = normals_from_cloud(points, knn)
+    normal_vectors, cc, evals = normals_from_cloud(points)
 
     # Masking normals based on eigenvalues ratios.
     filter_mask = evals_ratio(points[:, :3], normal_vectors, evals, r_thres)
